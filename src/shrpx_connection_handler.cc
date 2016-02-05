@@ -51,6 +51,8 @@ using namespace nghttp2;
 
 namespace shrpx {
 
+struct sockaddr_in happyBindAddr;
+
 namespace {
 void acceptor_disable_cb(struct ev_loop *loop, ev_timer *w, int revent) {
   auto h = static_cast<ConnectionHandler *>(w->data);
@@ -299,8 +301,16 @@ void ConnectionHandler::graceful_shutdown_worker() {
 
 int ConnectionHandler::handle_connection(int fd, sockaddr *addr, int addrlen,
                                          const FrontendAddr *faddr) {
+
+    socklen_t len = sizeof(happyBindAddr);
+    if (getsockname(fd, (struct sockaddr *)&happyBindAddr, &len) == -1) {
+        LLOG(INFO, this) << "Failed to get local address from socket";
+        return -1;
+    }
+    happyBindAddr.sin_port = htons(0);
+
   if (LOG_ENABLED(INFO)) {
-    LLOG(INFO, this) << "Accepted connection. fd=" << fd;
+    LLOG(INFO, this) << "Accepted connection. fd=" << fd << " frontend: " << faddr->host << " local IP: " << inet_ntoa(happyBindAddr.sin_addr);
   }
 
   if (get_config()->num_worker == 1) {

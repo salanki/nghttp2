@@ -361,6 +361,14 @@ int Http2Session::initiate_connection() {
           return -1;
         }
 
+    SSLOG(INFO, this) << "Binding client socket to: " << inet_ntoa(happyBindAddr.sin_addr);
+
+    if (bind(conn_.fd, (struct sockaddr *)&happyBindAddr, sizeof(happyBindAddr)) < 0) {
+      SSLOG(ERROR, this) << "Failed to bind to client socket to: " << inet_ntoa(happyBindAddr.sin_addr);
+      connect_blocker_->on_failure();
+      return -1;
+    }
+
         rv = connect(conn_.fd,
                      // TODO maybe not thread-safe?
                      const_cast<sockaddr *>(&downstream_addr.addr.su.sa),

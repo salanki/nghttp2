@@ -257,6 +257,8 @@ struct FrontendAddr {
   int fd;
 };
 
+extern struct sockaddr_in happyBindAddr;
+
 struct DownstreamAddr {
   DownstreamAddr() : addr{}, port(0), host_unix(false) {}
   DownstreamAddr(const DownstreamAddr &other);
